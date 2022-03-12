@@ -82,5 +82,8 @@ for key in new_entries.data.entries:
             # print(colored(f"{rem}: {value}", "red"))
 
 
-new_entries.data.to_file("test.bib", "bibtex")
 print(colored(f"\n\nSuccessfully uploaded {success}/{total} entries", "green"))
+
+
+new_entries.data.to_file(f"clean_{FILENAME}", "bibtex")
+print(colored(f"\nSuccessfully saved the bibliography to clean_{FILENAME}", "green"))
