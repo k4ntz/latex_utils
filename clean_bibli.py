@@ -2,6 +2,8 @@ from pybtex.database.input import bibtex
 from termcolor import colored
 from dblp.dblp_api import search_publication, get_bibtex
 from difflib import SequenceMatcher
+import requests
+import re
 
 
 FILENAME = 'bibliography.bib'
@@ -20,6 +22,62 @@ USELESS_FIELDS = ['howpublished', 'month', 'pages', 'volume', 'publisher',
 
 def similarity(str1, str2):
     return SequenceMatcher(None, str1, str2).ratio()
+
+
+def handrepair_booktitle(fields):
+    booktitle = fields["booktitle"]
+    parts = booktitle.split(", ")
+    if len(parts) > 2:
+        string1 = parts[1]
+        try:
+            date = int(re.search(r'\d+', string1).group())
+        except AttributeError:
+            date = 1
+        if len(str(date)) == 4 and date > 1900 and date < 2030:
+            conf = string1
+            for to_rm in [str(date), "{", "}", " "]:
+                conf = conf.replace(to_rm, "")
+            new_booktitle = parts[0] + f" ({conf})"
+            txt = f'Updating booktitle for {title}:\n\t{booktitle}\n' + \
+                  f' -> {new_booktitle} (hand-made)'
+            print(colored(txt, 'green'))
+            fields.update({"booktitle": new_booktitle})
+            return True
+        else:
+            print(colored(f"Couldn't update {booktitle}.", "red"))
+            return False
+
+
+def repair_booktitle(fields):
+    doi = None
+    title = fields['title']
+    if "doi" in fields.keys():
+        doi = fields['doi'].replace("\\", '')
+    else:
+        # extract id
+        url = "https://api.semanticscholar.org/graph/v1/paper/search"
+        response = requests.get(url=url, params={"query": title})
+        if response.ok:
+            json_parsed = response.json()
+            if json_parsed['total'] > 0:
+                for paper in json_parsed["data"]:
+                    if similarity(title, paper["title"]) > 0.8:
+                        doi = paper["paperId"]
+                        break
+    if doi:
+        url = f"https://api.semanticscholar.org/v1/paper/{doi}"
+        response = requests.get(url=url)
+        data = response.json()
+        new_booktitle = data["venue"]
+        booktitle = fields["booktitle"]
+        if similarity(booktitle, new_booktitle) > 0.3:
+            txt = f'Updating booktitle for {title}:\n\t{booktitle}\n' + \
+                  f' -> {new_booktitle} (from SemanticScholar database)'
+            print(colored(txt, 'green'))
+            fields.update({"booktitle": new_booktitle})
+            return True
+        else:
+            return handrepair_booktitle(fields)
 
 
 def change_key(bibtex_string, key):
@@ -75,16 +133,22 @@ for key in bib_data.entries:
         new_entries.data.add_entry(key, entry)
     total += 1
 
+print("\n" + "-" * 50 + "\n")
+print("NOW REPAIRING BOOKTITLES:\n")
 
+nb_booktitles = 0
+repaired_booktitles = 0
 for key in new_entries.data.entries:
     entry = new_entries.data.entries[key]
+    if "booktitle" in entry.fields:
+        repaired_booktitles += int(repair_booktitle(entry.fields))
+        nb_booktitles += 1
     for rem in USELESS_FIELDS:
         if rem in entry.fields:
             value = entry.fields.pop(rem)
-            # print(colored(f"{rem}: {value}", "red"))
 
-
-print(colored(f"\n\nSuccessfully uploaded {success}/{total} entries", "green"))
+print(colored(f"\n\nSuccessfully updated {success}/{total} entries", "green"))
+print(colored(f"\n\nSuccessfully updated {success}/{total} entries", "green"))
 
 
 new_entries.data.to_file(f"clean_{FILENAME}", "bibtex")
