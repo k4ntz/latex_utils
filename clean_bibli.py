@@ -1,6 +1,6 @@
 from pybtex.database.input import bibtex
 from termcolor import colored
-from dblp_api import search_publication, get_bibtex
+from dblp.dblp_api import search_publication, get_bibtex
 from difflib import SequenceMatcher
 
 
@@ -38,8 +38,10 @@ def process_first_author(author_str):
     last_name, first_name = author_str.split(', ')
     if len(first_name) == 3 and first_name[1] == "-":
         first_name = ''
-    if "{" in author_str: # special character
-        author_str = author_str[:author_str.find("{")]
+    if "{" in first_name:
+        first_name = first_name[:first_name.find("{")]
+    if "{" in last_name:
+        last_name = last_name[:last_name.find("{")]
     return ' '.join([first_name, last_name])
 
 

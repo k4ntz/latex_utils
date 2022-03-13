@@ -2,8 +2,8 @@ from enum import Enum
 import re
 import requests
 
-import config
-import dblp_data
+import dblp.config as config
+import dblp.dblp_data  as dblp_data
 
 
 class BibFormat(Enum):
