@@ -1,0 +1,21 @@
+\begin{table*}[t!]
+\centering
+\begin{tabular}{@{}c|ccc|cc|cc|}
+\toprule
+\multicolumn{1}{l|}{\multirow{2}{*}{Method}} & \multicolumn{3}{c|}{Baselines}  & \multicolumn{2}{c|}{SCoBot} & \multicolumn{2}{c|}{iSCoBot} %%\cmidrule(l){2-8}
+        &   & Random    & Human     & Rainbow   & DeepGA    & Reinforce & DeepGA    & Reinforce\\
+\midrule
+Bowling & 23        & 161       & 30.0      & ??        & ??        & 185.78 $\pm$ 11.75        & 40.11 $\pm$ 3.83        \\
+Boxing  & 0.1       & 12.1      & 99.6      & ??        & ??        & 78.45 $\pm$ 2.28        & 51.8 $\pm$ 6.08        \\
+Breakout  & ??    & ??      & ??       & ??        & ??        & ??      & ??        \\
+Pong    & -20.7     & 14.6      & 20.9      & ??        & ??        & 18.95 $\pm$ 1.78      & 19.68 $\pm$ 0.05  \\
+Skiing  & -17098    & -4337     & -12,957.8 & ??        & ??        & -5824.8        & ??        \\
+SpaceInv.  & ??    & ??     & ??       & ??        & ??        & ??      & ??        \\
+Tennis  & -23.8     & -8.3      & 0.0       & ??        & ??        & 21.3      & ??        \\
+\midrule
+Coinjump  & ??     &  ??     &  ??       & ??        & ??        & ??     & ??        \\
+\bottomrule
+\end{tabular}
+\caption{SCoBots can solve Atari games. \orange{Make it human normalized}}
+    \label{tab:exp-score-general}
+\end{table*}
